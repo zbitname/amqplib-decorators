@@ -1,0 +1,88 @@
+{
+  "env": {
+      "node": true,
+      "es2021": true
+  },
+  "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended"
+  ],
+  "globals": {
+      "Atomics": "readonly",
+      "SharedArrayBuffer": "readonly"
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+      "ecmaVersion": 2021,
+      "sourceType": "module"
+  },
+  "plugins": [
+      "@typescript-eslint"
+  ],
+  "rules": {
+      "@typescript-eslint/no-var-requires": ["off"],
+      "comma-dangle": [
+          "error",
+          {
+              "arrays": "always-multiline",
+              "objects": "always-multiline",
+              "imports": "always-multiline",
+              "exports": "always-multiline",
+              "functions": "always-multiline"
+          }
+      ],
+      "indent": [
+          "error",
+          2,
+          {
+              "SwitchCase": 1,
+              "ArrayExpression": "first",
+              "ObjectExpression": "first"
+          }
+      ],
+      "linebreak-style": [
+          "error",
+          "unix"
+      ],
+      "newline-before-return": 2,
+      "no-cond-assign": "error",
+      "no-console": "warn",
+      "no-constant-condition": [
+          "error", {
+              "checkLoops": false
+          }],
+      "no-const-assign": "error",
+      "no-extra-boolean-cast": "off",
+      "no-multiple-empty-lines": ["error", {
+          "max": 1,
+          "maxEOF": 0
+      }],
+      "object-curly-spacing": ["error", "always"],
+      "object-curly-newline": [
+          "error",
+          {
+              "ObjectExpression": {
+                  "multiline": true,
+                  "minProperties": 3
+              },
+              "ObjectPattern": {
+                  "multiline": true,
+                  "minProperties": 3
+              },
+              "ImportDeclaration": {
+                  "multiline": true,
+                  "minProperties": 3
+              },
+              "ExportDeclaration": {
+                  "multiline": true,
+                  "minProperties": 3
+              }
+          }
+      ],
+      "object-property-newline": ["error", {
+          "allowAllPropertiesOnSameLine": false
+      }],
+      "quotes": ["error", "single"],
+      "semi": ["error", "always"]
+  }
+}
