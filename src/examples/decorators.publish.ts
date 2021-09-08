@@ -39,6 +39,8 @@ class TestMessanger2 extends Messanger {
   const testMessanger2 = new TestMessanger2();
   await testMessanger2.init();
 
+  console.log(Messanger.test);
+  console.log(TestMessanger.test);
   console.log(testMessanger.test);
   console.log(testMessanger2.test);
 /*

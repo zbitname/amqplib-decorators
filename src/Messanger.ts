@@ -7,6 +7,7 @@ type TChannelGetter = (connection: Connection) => Promise<Channel>;
 type TQueueGetter = () => Promise<Queue>;
 
 export class Messanger {
+  static test = '10';
   public test = '1';
   public connectionUrl?: string;
   public connection?: Connection;
