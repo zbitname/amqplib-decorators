@@ -20,15 +20,16 @@ class TestMessanger extends Messanger {
     queue.consume(handler);
   }
   */
-  public async onMessage(msg: ConsumeMessage | null) {
-    console.log(msg?.content.toString());
+  public async onMessage(/*msg: ConsumeMessage | null*/) {
+    // console.log(msg?.content.toString());
+    console.log('TestMessanger#this.test', this.test);
   }
 }
 
 @UseConnectionAndChannel(url, channelId)
 class TestMessanger2 extends Messanger {
-  public async onMessage2(msg: ConsumeMessage | null) {
-    console.log(msg?.content.toString());
+  public async onMessage() {
+    console.log('TestMessanger2#this.test', this.test);
   }
 }
 
@@ -39,10 +40,12 @@ class TestMessanger2 extends Messanger {
   const testMessanger2 = new TestMessanger2();
   await testMessanger2.init();
 
-  console.log(Messanger.test);
-  console.log(TestMessanger.test);
-  console.log(testMessanger.test);
-  console.log(testMessanger2.test);
+  console.log('Messanger.test', Messanger.test);
+  console.log('TestMessanger.test', TestMessanger.test);
+  console.log('testMessanger.test', testMessanger.test);
+  console.log('testMessanger2.test', testMessanger2.test);
+  testMessanger.onMessage();
+  testMessanger2.onMessage();
 /*
   await testMessanger.onMessage(async (msg) => {
     console.log(msg?.content.toString());
