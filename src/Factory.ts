@@ -15,5 +15,3 @@ const getChannelForConnection = async (url: string, channelId: string) => {
 
   return channel;
 };
-
-

@@ -1,83 +1,67 @@
-import { Channel, Connection, ConsumeMessage, Options } from 'amqplib';
-
 import { ConnectionManager } from './managers/ConnectionManager';
 import { ChannelManager } from './managers/ChannelManager';
+import { Consumer } from './Consumer';
 import { Queue } from './Queue';
-import { Messanger } from './Messanger';
+import { AMQPConnection, IChannelParams, IQueueParams } from './types';
+
+const DEFAULT_CHANNEL_ID = 'default';
+
+interface IChannel extends IChannelParams {
+  id?: string;
+}
 
 const connectionManager = new ConnectionManager();
-const channelManagersByConnections: {[key: string]: ChannelManager} = {};
-export function UseConnectionAndChannel(url: string, id?: string) {
+const channelManagersByConnections: {[connectionId: string]: {[channelId: string]: ChannelManager}} = {};
+
+// class decorator
+export function InitConsumer(url: string, channelParams: IChannel, queueParams: IQueueParams) {
+  let queueCache: Queue | null = null;
+
   return (constructor: Function) => {
-    if (!channelManagersByConnections[url]) {
-      channelManagersByConnections[url] = new ChannelManager();
+    if (!channelParams.id) {
+      channelParams.id = DEFAULT_CHANNEL_ID;
     }
 
-    const channelManager = channelManagersByConnections[url];
+    if (!channelManagersByConnections[url]) {
+      channelManagersByConnections[url] = {};
+    }
 
-    constructor.prototype.connectionUrl = url;
-    constructor.prototype.setConnectionGetter(() => connectionManager.getConnection(url));
-    constructor.prototype.setChannelGetter((connection: Connection) => {
+    if (!channelManagersByConnections[url][channelParams.id]) {
+      channelManagersByConnections[url][channelParams.id] = new ChannelManager();
+    }
+
+    const connectionGetter = () => connectionManager.getConnection(url);
+
+    const channelGetter = async () => {
+      const connection = await connectionGetter();
+      const channelManager = channelManagersByConnections[url][channelParams.id || DEFAULT_CHANNEL_ID];
       channelManager.setConnection(connection);
-      return channelManager.getChannel(id);
-    });
-  };
-}
+      const ch = await channelManager.getChannel();
 
-interface IConsumeParams {
-  queue: string,
-  queueOptions?: Options.AssertQueue,
-  consumeOptions?: Options.Consume,
-  prefetchCount?: number
-}
+      if (channelParams.prefetch) {
+        ch.prefetch(channelParams.prefetch);
+      }
 
-export function Consume(params: IConsumeParams) {
-  return (
-    target: Messanger,
-    key: string | symbol,
-    descriptor: PropertyDescriptor,
-  ) => {
-    target.test = '2';
-    return descriptor;
-  };
-}
-
-/*
-export function Consume(params: IConsumeParams) {
-  return (
-    target: Messanger,
-    key: string | symbol,
-    descriptor: PropertyDescriptor,
-  ) => {
-    const originalMethod = descriptor.value;
-console.log(target.);
-    descriptor.value = function (handler: (msg: ConsumeMessage | null) => Promise<void>) {
-      const that = (this as Messanger);
-      that.setQueueGetterHook(key as string, async () => {
-        if (!that.channel) {
-          throw new Error('Channel is not defined');
-        }
-
-        if (!that.queues[params.queue]) {
-          that.queues[params.queue] = new Queue(
-            that.channel,
-            params.queue,
-            params.queueOptions,
-            params.consumeOptions,
-            params.prefetchCount,
-          );
-
-          await that.queues[params.queue].init();
-        }
-
-        return that.queues[params.queue];
-      });
-
-      const result = originalMethod.apply(this, [handler]);
-      return result;
+      return ch;
     };
 
-    return descriptor;
+    const queueGetter = async () => {
+      const channel = await channelGetter();
+      if (!queueCache) {
+        queueCache = new Queue(
+          channel,
+          queueParams.name,
+          queueParams.queueOptions,
+          queueParams.consumeOptions
+        );
+      }
+
+      return queueCache;
+    };
+
+    constructor.prototype.connectionUrl = url;
+    constructor.prototype.connectionGetter = connectionGetter;
+    constructor.prototype.channelGetter = channelGetter;
+    constructor.prototype.queueGetter = queueGetter;
   };
 }
-*/

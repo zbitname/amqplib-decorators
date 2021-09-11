@@ -1,9 +1,7 @@
 import { Channel, Options } from 'amqplib';
 
 import { generateRandomString } from './helpers';
-
-type TSerializer = (msg: any) => Buffer;
-type TExchangeType = 'direct' | 'topic' | 'headers' | 'fanout' | 'match';
+import { TExchangeType, TSerializer } from './types';
 
 export enum PUBLISH_DESTINATION {
   QUEUE = 'queue',

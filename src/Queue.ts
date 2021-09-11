@@ -1,15 +1,20 @@
-import { Channel, ConsumeMessage, Options } from 'amqplib';
+import {
+  AMQPAssertQueue,
+  AMQPChannel,
+  AMQPConsume,
+  AMQPConsumeMessage,
+  IQueue,
+} from './types';
 
-export class Queue {
+export class Queue implements IQueue {
   private initted = false;
   private initInProcessing = false;
 
   constructor(
-    private channel: Channel,
+    private channel: AMQPChannel,
     private name: string,
-    private queueOptions: Options.AssertQueue = {},
-    private consumeOptions: Options.Consume = {},
-    private prefetch: number = 1
+    private queueOptions: AMQPAssertQueue = {},
+    private consumeOptions: AMQPConsume = {}
   ) {}
 
   async init(): Promise<void> {
@@ -19,17 +24,13 @@ export class Queue {
 
     this.initInProcessing = true;
 
-    if (this.prefetch) {
-      this.channel.prefetch(this.prefetch);
-    }
-
     await this.channel.assertQueue(this.name, this.queueOptions);
     this.initted = true;
     this.initInProcessing = false;
   }
 
-  public consume(handler: (msg: ConsumeMessage | null) => Promise<void>) {
-    this.channel.consume(this.name, async (msg: ConsumeMessage | null) => {
+  public consume(handler: (msg: AMQPConsumeMessage | null) => Promise<void>) {
+    this.channel.consume(this.name, async (msg: AMQPConsumeMessage | null) => {
       if (!msg) {
         console.log('Empty message');
         return;
@@ -44,16 +45,16 @@ export class Queue {
       }
     }, this.consumeOptions);
   }
-
+/*
   public async send<T>(message: T): Promise<void> {
     this.channel.sendToQueue(this.name, Buffer.from(JSON.stringify(message)));
   }
-
-  public async ack(msg: ConsumeMessage) {
+*/
+  public async ack(msg: AMQPConsumeMessage) {
     this.channel.ack(msg);
   }
 
-  public async nack(msg: ConsumeMessage) {
+  public async nack(msg: AMQPConsumeMessage) {
     this.channel.nack(msg);
   }
 }
