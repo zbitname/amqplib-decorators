@@ -4,7 +4,7 @@ import {
   AMQPConsume,
   AMQPConsumeMessage,
   IQueue,
-} from './types';
+} from '../types';
 
 export class Queue implements IQueue {
   private initted = false;

@@ -1,16 +1,18 @@
-import { Exchange, PUBLISH_DESTINATION } from '../Exchange';
-import { ChannelManager } from '../managers/ChannelManager';
-import { ConnectionManager } from '../managers/ConnectionManager';
-import { Queue } from '../Queue';
-
-const url: string = process.env['AMQP_URL'] || '';
+import { Exchange } from '../amqp/Exchange';
+import { ChannelManager } from '../amqp/ChannelManager';
+import { ConnectionManager } from '../amqp/ConnectionManager';
+import { Queue } from '../amqp/Queue';
+import { PUBLISH_DESTINATION } from '../types';
+import { AMQP_URL } from './config';
 
 const connectionManager = new ConnectionManager();
 const channelManager = new ChannelManager();
 
 (async () => {
-  const connection = await connectionManager.getConnection(url);
-  channelManager.setConnection(connection);
+  const connection = await connectionManager.getConnection(AMQP_URL);
+  await connection.connect();
+
+  channelManager.setConnection(await connection.connect());
   const channel = await channelManager.getChannel();
 
   const queueName = 'test-managers';
@@ -20,13 +22,21 @@ const channelManager = new ChannelManager();
   });
   await queue.init();
 
-  const exchange = new Exchange(channel, queueName, 'direct', {
-    autoDelete: true,
-  }, [{
-    destinationType: PUBLISH_DESTINATION.QUEUE,
-    pattern: queueName,
-    destination: queueName
-  }]);
+  const exchange = new Exchange(
+    channel,
+    {
+      name: queueName,
+      options: {
+        autoDelete: true
+      },
+      type: 'direct',
+      bindings: [{
+        destinationType: PUBLISH_DESTINATION.QUEUE,
+        pattern: queueName,
+        destination: queueName
+      }]
+    },
+  );
   await exchange.init();
 
   await exchange.publish('test', queueName);

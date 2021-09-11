@@ -1,11 +1,12 @@
-import { connect, Connection } from 'amqplib';
+import { Connection } from './Connection';
 
 export class ConnectionManager {
   private connections: {[key: string]: Connection} = {};
 
   public async getConnection(url: string): Promise<Connection> {
     if (!this.connections[url]) {
-      this.connections[url] = await connect(url);
+      this.connections[url] = new Connection(url);
+      await this.connections[url].connect();
     }
 
     return this.connections[url];

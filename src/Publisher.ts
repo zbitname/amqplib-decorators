@@ -1,23 +1,23 @@
-import { Queue } from './amqp/Queue';
+import { Exchange } from './amqp/Exchange';
 import { Connection } from './amqp/Connection';
 import { getConnection } from './ConnectionFactory';
 import {
   AMQPChannel,
-  AMQPConsumeMessage,
+  AMQPPublish,
   IChannelParams,
-  IQueue,
-  IQueueParams,
+  IExchange,
+  IExchangeParams,
 } from './types';
 
-export abstract class Consumer {
+export abstract class Publisher {
   private connection?: Connection;
   private channel?: AMQPChannel;
-  private queue?: IQueue;
+  private exchange?: IExchange;
 
   constructor(
     private connectionUrl: string,
     private channelParams: IChannelParams,
-    private queueParams: IQueueParams,
+    private exchangeParams: IExchangeParams,
   ) {}
 
   public async init() {
@@ -25,20 +25,14 @@ export abstract class Consumer {
     const channelManager = this.connection.getChannelManager();
     this.channel = await channelManager.getChannel(this.channelParams.id);
 
-    if (this.channelParams.prefetch) {
-      this.channel.prefetch(this.channelParams.prefetch);
-    }
-
-    this.queue = new Queue(
+    this.exchange = new Exchange(
       this.channel,
-      this.queueParams.name,
-      this.queueParams.queueOptions,
-      this.queueParams.consumeOptions
+      this.exchangeParams
     );
-    await this.queue.init();
-
-    this.queue.consume(this.consume);
+    await this.exchange.init();
   }
 
-  abstract consume(msg: AMQPConsumeMessage | null): any;
+  public async publish(message: any, routingKey: string = '*', options: AMQPPublish = {}) {
+    return this.exchange!.publish(message, routingKey, options);
+  }
 }
