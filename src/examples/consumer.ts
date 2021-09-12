@@ -2,7 +2,7 @@ import { Consumer } from '../Consumer';
 import { AMQPConsumeMessage } from '../types';
 import { strategies } from './config';
 
-const strategy = strategies.test1;
+const strategy = strategies.simple;
 
 class TestConsumer extends Consumer {
   public async consume(msg: AMQPConsumeMessage | null) {

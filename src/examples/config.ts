@@ -14,34 +14,89 @@ interface IStrategy {
   exchangeParams?: IExchangeParams;
 }
 
-const test1QueueParams = {
-  name: 'test1',
+const simpleQueueParams = {
+  name: 'test-simple',
   consumeOptions: {},
   queueOptions: {
     autoDelete: true,
   },
 };
 
+const complex1QueueParams1 = {
+  name: 'qcomplex1',
+  consumeOptions: {},
+  queueOptions: {autoDelete: true},
+};
+
+const complex1QueueParams2 = {
+  name: 'qcomplex2',
+  consumeOptions: {},
+  queueOptions: {autoDelete: true},
+};
+
 export const strategies = {
-  test1: {
+  simple: {
     url: AMQP_URL,
     channelParams: {
-      id: test1QueueParams.name,
+      id: simpleQueueParams.name,
       prefetch: 1,
     },
-    queueParams: test1QueueParams,
+    queueParams: simpleQueueParams,
     exchangeParams: {
-      name: test1QueueParams.name,
+      name: simpleQueueParams.name,
       type: 'direct',
       options: {
         autoDelete: true,
       },
       bindings: [{
-        destination: test1QueueParams.name,
+        destination: simpleQueueParams.name,
         destinationType: PUBLISH_DESTINATION.QUEUE,
         pattern: '*',
-        queueParams: test1QueueParams,
+        queueParams: simpleQueueParams,
       }],
     }
-  } as IStrategy
+  } as IStrategy,
+  complex1: {
+    url: AMQP_URL,
+    channelParams: {
+      id: 'ch1',
+      prefetch: 10,
+    },
+    exchangeParams: {
+      name: 'ecomplex1',
+      options: {autoDelete: true},
+      type: 'fanout',
+      bindings: [{
+        destinationType: PUBLISH_DESTINATION.EXCHANGE,
+        destination: 'ecomplex1.ex2',
+        pattern: '*',
+        exchangeParams: {
+          name: 'ecomplex1.ex2',
+          options: {autoDelete: true},
+          type: 'direct',
+          bindings: [{
+            destinationType: PUBLISH_DESTINATION.QUEUE,
+            destination: complex1QueueParams1.name,
+            pattern: '*',
+            queueParams: complex1QueueParams1, // may be skipped
+          }],
+        }
+      }, {
+        destinationType: PUBLISH_DESTINATION.EXCHANGE,
+        destination: 'ecomplex1.ex3',
+        pattern: '*',
+        exchangeParams: {
+          name: 'ecomplex1.ex3',
+          options: {autoDelete: true},
+          type: 'direct',
+          bindings: [{
+            destinationType: PUBLISH_DESTINATION.QUEUE,
+            destination: complex1QueueParams2.name,
+            pattern: '*',
+            queueParams: complex1QueueParams2, // may be skipped
+          }],
+        }
+      }]
+    }
+  } as IStrategy,
 };

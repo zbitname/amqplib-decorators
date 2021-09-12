@@ -43,12 +43,16 @@ export class Exchange implements IExchange {
     for (const binding of this.exchangeParams.bindings!) {
       switch (binding.destinationType) {
         case PUBLISH_DESTINATION.QUEUE:
-          await new Queue(this.channel, binding.queueParams!.name, binding.queueParams!.queueOptions).init();
+          if (binding.queueParams) {
+            await new Queue(this.channel, binding.queueParams.name, binding.queueParams.queueOptions).init();
+          }
           await this.bindToQueue(binding.destination, binding.pattern);
           break;
 
         case PUBLISH_DESTINATION.EXCHANGE:
-          await new Exchange(this.channel, binding.exchangeParams!).init();
+          if (binding.exchangeParams) {
+            await new Exchange(this.channel, binding.exchangeParams).init();
+          }
           await this.bindToExchange(binding.destination, binding.pattern);
           break;
 
@@ -67,7 +71,7 @@ export class Exchange implements IExchange {
   }
 
   public async bindToExchange(exchangeName: string, pattern = '*'): Promise<void> {
-    await this.channel.bindQueue(exchangeName, this.exchangeParams.name, pattern);
+    await this.channel.bindExchange(exchangeName, this.exchangeParams.name, pattern);
   }
 
   public async publish(message: any, routingKey: string, options: AMQPPublish = {}): Promise<boolean> {

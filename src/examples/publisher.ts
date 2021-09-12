@@ -1,7 +1,7 @@
 import { Publisher } from '../Publisher';
 import { strategies } from './config';
 
-const strategy = strategies.test1;
+const strategy = strategies.simple;
 
 class TestPublisher extends Publisher {}
 
