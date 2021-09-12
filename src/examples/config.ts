@@ -78,7 +78,7 @@ export const strategies = {
             destinationType: PUBLISH_DESTINATION.QUEUE,
             destination: complex1QueueParams1.name,
             pattern: '*',
-            queueParams: complex1QueueParams1, // may be skipped
+            queueParams: complex1QueueParams1,
           }],
         }
       }, {
@@ -93,7 +93,7 @@ export const strategies = {
             destinationType: PUBLISH_DESTINATION.QUEUE,
             destination: complex1QueueParams2.name,
             pattern: '*',
-            queueParams: complex1QueueParams2, // may be skipped
+            queueParams: complex1QueueParams2,
           }],
         }
       }]
